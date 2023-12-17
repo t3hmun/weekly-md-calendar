@@ -30,10 +30,28 @@ fs.mkdirSync("./output");
 // }
 
 createYearOfWeekFiles(2023);
+createYearOfWeekFiles(2024);
 
 function createYearOfWeekFiles(thisYear) {
+  const yearDate = new Date(thisYear, 0, 1);
   let weekNum = 1;
   // There can be 52 or 53 weeks in a year, so just loop until we hit the next *ISO* year.
+  let yearFile = `---
+timestamp: ${formatISO(yearDate)}
+week: ${wFormat(yearDate)}
+tags:
+  - journal
+---
+<[[${thisYear - 1}]] | [[${thisYear + 1}]] >
+
+## The Year
+
+
+## Weekly Summaries
+`;
+
+  fs.mkdirSync(`./output/${thisYear}`);
+
   while (true) {
     const weekDate = parseISO(
       `${thisYear}-W${weekNum.toString().padStart(2, "0")}`,
@@ -41,14 +59,21 @@ function createYearOfWeekFiles(thisYear) {
     const prevWeekDate = addWeeks(weekDate, -1);
     const nextWeekDate = addWeeks(weekDate, 1);
 
-    createWeekFile(weekDate, prevWeekDate, nextWeekDate);
+    createWeekFile(thisYear, weekDate, prevWeekDate, nextWeekDate);
+    yearFile += `
+### [[${wFormat(weekDate)}]] - ${format(weekDate, "MMM do")}
 
-    // End once the ISO week-year does not mach, not the actual year, which can be different.
+- `;
+
+    // End once the ISO week-year does not match, not the actual year, which can be different.
     if (getISOWeekYear(nextWeekDate) !== thisYear) {
       break;
     }
     weekNum++;
   }
+
+  const yearFilename = `./output/${thisYear}/${thisYear}.md`;
+  fs.writeFileSync(yearFilename, yearFile);
 }
 
 function wFormat(date) {
@@ -56,7 +81,7 @@ function wFormat(date) {
   return format(date, "R-'W'II");
 }
 
-function createWeekFile(weekDate, prevWeekDate, nextWeekDate) {
+function createWeekFile(thisYear, weekDate, prevWeekDate, nextWeekDate) {
   const weekFormatted = wFormat(weekDate);
   const prevWeekFormatted = wFormat(prevWeekDate);
   const nextWeekFormatted = wFormat(nextWeekDate);
@@ -64,12 +89,15 @@ function createWeekFile(weekDate, prevWeekDate, nextWeekDate) {
   const timestamp = formatISO(weekDate);
   log(`${weekFormatted}  (${weekDate})`);
 
-  const filename = `./output/${weekFormatted}.md`;
+  const filename = `./output/${thisYear}/${weekFormatted}.md`;
   const content = `---
 timestamp: ${timestamp}
 week: ${weekFormatted}
+tags:
+  - journal
 ---
-<[[${prevWeekFormatted}]] | [[${nextWeekFormatted}]] >
+
+<[[${prevWeekFormatted}]] | [[${thisYear}]] | [[${nextWeekFormatted}]] >
 
 ## Tasks
 
@@ -88,7 +116,6 @@ week: ${weekFormatted}
 ## ${format(addDays(weekDate, +5), "yyyy-MM-dd EEEE")}
 
 ## ${format(addDays(weekDate, +6), "yyyy-MM-dd EEEE")}
-
 
 `;
 
