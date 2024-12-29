@@ -24,13 +24,16 @@ fs.rmSync("./output", { recursive: true, force: true });
 log("Creating output directory");
 fs.mkdirSync("./output");
 
-// //FUN FACT: ISO Week 1 can start in the previous year, it is based on the first Thursday of the year.
+// FUN FACT: ISO Week 1 can start in the previous year, it is based on the first Thursday of the year.
+// So the last few days of the year may be in the next year, this works fine for a weekly diary.
+
 // for (let year = 2000; year <= 2030; year++) {
 //   log(`${year}: ${parseISO(`${year}-W01`)}`);
 // }
 
-createYearOfWeekFiles(2023);
-createYearOfWeekFiles(2024);
+// createYearOfWeekFiles(2023);
+// createYearOfWeekFiles(2024);
+createYearOfWeekFiles(2025);
 
 function createYearOfWeekFiles(thisYear) {
   const yearDate = new Date(thisYear, 0, 1);
